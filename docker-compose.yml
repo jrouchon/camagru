@@ -1,0 +1,62 @@
+# Version du fichier Docker Compose.
+version: "3.8"
+
+# Définition des services à orchestrer
+services:
+  # Service pour le frontend (React)
+  client:
+    # Construction de l'image Docker à partir du Dockerfile dans le dossier ./front
+    build:
+      context: ./front # Le chemin du dossier contenant le Dockerfile
+    # Mappage des ports entre le conteneur et la machine hôte
+    # Le port 3000 du conteneur sera accessible via le port 3000 sur l'hôte
+    ports:
+      - "3000:3000"
+    # Configuration des volumes pour un développement en direct
+    volumes:
+      - ./front:/app           # Monte le dossier local front dans le conteneur
+      - /app/node_modules       # Exclut le dossier node_modules (géré par le conteneur)
+    # Variables d'environnement nécessaires au fonctionnement de React
+    environment:
+      - WATCHPACK_POLLING=true # Permet à React de surveiller les changements sur certains systèmes de fichiers
+      - FAST_REFRESH=true 
+
+    # Dépendance : ce service attend que le backend (server) soit prêt
+    depends_on:
+      - server
+
+  # Service pour le backend (Node.js)
+  server:
+    # Construction de l'image Docker à partir du Dockerfile dans le dossier ./back
+    build:
+      context: ./back
+    # Mappage des ports entre le conteneur et la machine hôte
+    # Le port 5000 du conteneur sera accessible via le port 5000 sur l'hôte
+    ports:
+      - "5000:5000"
+    # Configuration des volumes pour un développement en direct
+    volumes:
+      - ./back:/app           # Monte le dossier local back dans le conteneur
+      - /app/node_modules       # Exclut le dossier node_modules (géré par le conteneur)
+    # Variables d'environnement nécessaires au backend
+    environment:
+      - NODE_ENV=development    # Définit l'environnement en mode développement
+    # Dépendance : ce service attend que la base de données MongoDB soit prête
+    depends_on:
+      - mongo
+
+  # Service pour la base de données (MongoDB)
+  mongo:
+    # Utilisation d'une image officielle MongoDB
+    image: mongo:latest         # Télécharge et utilise la dernière version de MongoDB
+    # Mappage des ports entre le conteneur et la machine hôte
+    # Le port 27017 du conteneur sera accessible via le port 27017 sur l'hôte
+    ports:
+      - "27017:27017"
+    # Configuration des volumes pour la persistance des données
+    volumes:
+      - mongo-data:/data/db     # Les données de MongoDB seront stockées dans le volume nommé mongo-data
+
+# Définition des volumes utilisés par les services
+volumes:
+  mongo-data:                   # Volume nommé pour la persistance des données MongoDB
