@@ -4,7 +4,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <p>
-          JUJU LE SUPER CAMAGRU ou pas 
+          JUJU LE SUPER CAMAGRU 
         </p>
       </header>
     </div>
